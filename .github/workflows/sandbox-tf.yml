@@ -1,0 +1,58 @@
+name: Manage Sandbox Enviornment
+on: 
+    pull_request:
+      paths:
+        - 'az-sandbox-env/**'
+        - 'modules/**'
+        - '!**.md'
+
+    push:
+      paths:
+        - 'az-sandbox-env/**'
+        - 'modules/**'
+        - '!**.md'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    env:
+      ARM_CLIENT_ID: ${{secrets.AZ_SANDBOX_SPN_CLIENT_ID}}
+      ARM_CLIENT_SERET: ${{secrets.AZ_SANDBOX_SPN_CLIENT_SECRET}}
+      ARM_SUBSCRIPTION_ID: ${{secrets.AZ_SANDBOX_SPN_SUBSCRIPTION_ID}}
+      ARM_TENANT_ID: ${{secrets.AZ_FTR_TENANT_ID}}
+      CURRENT_ENV: az-sandbox-env
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: hasicorp/setup-terraform@v1.2.1
+        with:
+          terraform_version: 2.90.0
+
+      - name: Initialize Terraform
+        run: terraform init -input=false
+        working-directory: ${{env.CURRENT_ENV}}
+
+      - name: 'AZ CLI Login'
+        uses: azure/login@v1
+        with:
+          client-id: $ARM_CLIENT_ID
+          tenant-id: $ARM_TENANT_ID
+          subscription-id: $ARM_SUBSCRIPTION_ID
+      
+      - name: Terraform Format
+        run: terraform fmt -check -recursive -no-color
+
+      - name: Terraform Plan
+        if: github.event_name == "pull_request"
+        uses: dflook/terraform-plan@v1
+        with:
+          path: $CURRENT_ENV
+
+      - name: Terraform Apply
+        if: github.ref=='refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false
+        working-directory: $CURRENT_ENV
+
+ 
