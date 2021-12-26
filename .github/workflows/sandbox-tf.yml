@@ -49,9 +49,6 @@ jobs:
         run: 
           az account set --subscription $ARM_SUBSCRIPTION_ID
           
-      - name: Terraform -Recursive
-        run: terraform fmt -check -recursive
-
       - name: Terraform Format
         run: terraform fmt -check -recursive -no-color
 
