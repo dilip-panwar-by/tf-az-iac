@@ -18,7 +18,7 @@ jobs:
 
     env:
       ARM_CLIENT_ID: ${{secrets.AZ_SANDBOX_SPN_CLIENT_ID}}
-      ARM_CLIENT_SERET: ${{secrets.AZ_SANDBOX_SPN_CLIENT_SECRET}}
+      ARM_CLIENT_SECRET: ${{secrets.AZ_SANDBOX_SPN_CLIENT_SECRET}}
       ARM_SUBSCRIPTION_ID: ${{secrets.AZ_SANDBOX_SPN_SUBSCRIPTION_ID}}
       ARM_TENANT_ID: ${{secrets.AZ_FTR_TENANT_ID}}
       CURRENT_ENV: az-sandbox-env
