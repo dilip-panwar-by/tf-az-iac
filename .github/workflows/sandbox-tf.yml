@@ -28,7 +28,7 @@ jobs:
 
       - uses: hasicorp/setup-terraform@v1.2.1
         with:
-          terraform_version: 2.90.0
+          terraform_version: 0.14.5
 
       - name: Initialize Terraform
         run: terraform init -input=false
@@ -45,7 +45,7 @@ jobs:
         run: terraform fmt -check -recursive -no-color
 
       - name: Terraform Plan
-        if: github.event_name == "pull_request"
+        if: github.event_name == 'pull_request'
         uses: dflook/terraform-plan@v1
         with:
           path: $CURRENT_ENV
