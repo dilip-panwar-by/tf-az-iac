@@ -9,7 +9,7 @@ resource "azurerm_resource_group" "rg2" {
   name     = "ateam-resource-group"
   location = "australiaeast"
 }
-#Keyvault Creation
+#Keyvault  Creation
 data "azurerm_client_config" "current" {}
 resource "azurerm_key_vault" "kv1" {
   depends_on                  = [azurerm_resource_group.rg2]
@@ -51,7 +51,9 @@ resource "azurerm_key_vault_secret" "vmpassword" {
 }
 
 
-#create the virtual network
+
+
+#create the virtual  networks
 resource "azurerm_virtual_network" "vnet1" {
   resource_group_name = azurerm_resource_group.rg2.name
   location            = "australiaeast"
@@ -59,7 +61,7 @@ resource "azurerm_virtual_network" "vnet1" {
   address_space       = ["10.0.0.0/16"]
 }
 
-#create a subnet within the virtual network
+#create a subnet within the virtual  networks
 resource "azurerm_subnet" "subnet1" {
   resource_group_name  = azurerm_resource_group.rg2.name
   virtual_network_name = azurerm_virtual_network.vnet1.name
