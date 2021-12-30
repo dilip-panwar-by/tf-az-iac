@@ -1,10 +1,10 @@
 name: Manage Sandbox Enviornment
 on: 
     pull_request:
-      paths:
-        - 'az-sandbox-env/**'
-        - 'modules/**'
-        - '!**.md'
+     # paths:
+     #   - 'az-sandbox-env/**'
+     #   - 'modules/**'
+     #   - '!**.md'
 
     push:
       paths:
@@ -53,8 +53,9 @@ jobs:
         run: terraform fmt -check -recursive -no-color
 
       - name: Terraform Plan
-       # if: github.event_name == 'pull_request'
-        uses: dflook/terraform-plan@v1
+        if: github.event_name == 'pull_request'
+        #uses: dflook/terraform-plan@v1
+        run: terraform plan -input=false -no-color
         with:
           path: ${{env.CURRENT_ENV}}
 
