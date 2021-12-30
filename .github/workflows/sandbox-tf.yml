@@ -28,7 +28,7 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v1.2.1
         with:
-          terraform_version: 0.14.5
+          terraform_version: 1.2.1
 
       - name: Initialize Terraform
         run: terraform init -input=false
@@ -56,7 +56,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: dflook/terraform-plan@v1
         with:
-          path: $CURRENT_ENV
+          path: $env.CURRENT_ENV
 
       - name: Terraform Apply
         if: github.ref=='refs/heads/main' && github.event_name == 'push'
