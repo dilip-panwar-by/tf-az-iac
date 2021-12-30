@@ -26,9 +26,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: hasicorp/setup-terraform@v1.2.1
+      - uses: hasicorp/setup-terraform@v1
         with:
-          terraform_version: 0.14.5
+          terraform_version: 0.12.25
 
       - name: Initialize Terraform
         run: terraform init -input=false
