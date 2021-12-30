@@ -96,7 +96,7 @@ resource "azurerm_network_interface" "vmnic" {
 
 #Create VM
 resource "azurerm_windows_virtual_machine" "dc01-vm" {
-  name                = "dc01-vm"
+  name                = "dc01-vm1"
   depends_on = [ azurerm_key_vault.kv1 ]
   resource_group_name = azurerm_resource_group.rg2.name
   location            = "australiaeast"
