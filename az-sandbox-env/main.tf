@@ -10,7 +10,7 @@ resource "azurerm_resource_group" "rg2" {
   name     = "ateam-resource-group"
   location = "australiaeast"
 }
-#Keyvault  Creation
+#Keyvault   Creation
 data "azurerm_client_config" "current" {}
 resource "azurerm_key_vault" "kv1" {
   depends_on                  = [azurerm_resource_group.rg2]
