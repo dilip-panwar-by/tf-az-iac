@@ -10,7 +10,7 @@ resource "azurerm_resource_group" "rg2" {
   name     = "ateam-resource-group"
   location = "australiaeast"
 }
-#Keyvault Creation
+#Keyvault  Creation
 data "azurerm_client_config" "current" {}
 resource "azurerm_key_vault" "kv1" {
   depends_on                  = [azurerm_resource_group.rg2]
@@ -70,7 +70,7 @@ resource "azurerm_subnet" "subnet1" {
   address_prefixes     = ["10.0.0.0/24"]
 }
 
-##create the network interface for  the VM
+##create the network interface for the VM
 resource "azurerm_public_ip" "pub_ip" {
   name                = "vmpubip"
   location            = "australiaeast"
