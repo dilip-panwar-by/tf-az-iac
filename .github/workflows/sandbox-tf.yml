@@ -1,6 +1,8 @@
 name: Manage Sandbox Enviornment
 on: 
     pull_request:
+      branches:
+        - main
      # paths:
      #   - 'az-sandbox-env/**'
      #   - 'modules/**'
