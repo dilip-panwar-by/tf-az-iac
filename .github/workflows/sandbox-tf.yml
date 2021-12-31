@@ -53,7 +53,7 @@ jobs:
 
       - name: Terraform Plan
         if: github.event_name == 'pull_request'
-        uses: dflook/terraform-plan@v1
+        #uses: dflook/terraform-plan@v1
         with:
           path: ${{env.CURRENT_ENV}}
 
