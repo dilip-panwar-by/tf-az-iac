@@ -52,7 +52,7 @@ jobs:
         run: terraform fmt -check -recursive -no-color
 
       - name: Terraform Plan
-        if: github.event_name != 'push'
+        if: github.event_name.pull_request == true
         uses: dflook/terraform-plan@v1
         with:
           path: ${{env.CURRENT_ENV}}
