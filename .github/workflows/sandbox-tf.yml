@@ -1,10 +1,10 @@
 name: Manage Sandbox Enviornment
 on: 
     pull_request:
-     # paths:
-      #  - 'az-sandbox-env/**'
-       # - 'modules/**'
-        #- '!**.md'
+      paths:
+        - 'az-sandbox-env/**'
+        - 'modules/**'
+        - '!**.md'
 
     push:
       paths:
