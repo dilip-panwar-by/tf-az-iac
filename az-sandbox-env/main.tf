@@ -4,7 +4,7 @@ resource "random_id" "kvname" {
   prefix      = "keyvault"
 }
 
-#create the resource  group
+#create the resource group
 resource "azurerm_resource_group" "rg2" {
   name     = "ateam-resource-group"
   location = "australiaeast"
