@@ -11,7 +11,7 @@ variable "rsg_location" {
 variable "admin_username" {
   type        = string
   description = "Administrator username for server"
-  default = null
+  default     = null
 }
 
 variable "disk_type" {

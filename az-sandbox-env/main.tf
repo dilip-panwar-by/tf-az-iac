@@ -83,7 +83,7 @@ module "azure-network-interface" {
   public_ip_address_id          = module.azure-public-ip.azure-public-ip-id
 }
 
-#Create VM module
+#Create VM  module
 module "azure-windows-vm" {
   source     = "../modules/azure-windows-vm"
   depends_on = [module.zurerm-key-vault]
