@@ -1,121 +1,101 @@
-#Create KeyVault ID
-resource "random_id" "kvname" {
-  byte_length = 5
-  prefix      = "keyvault"
+locals {
+  env    = "sandbox"
+  prefix = "sandbox-"
 }
-
-#create the resource group
-resource "azurerm_resource_group" "rg2" {
-  name     = "ateam-resource-group"
-  location = "australiaeast"
+module "azure-resource-group" {
+  source       = "../modules/azure-resource-group"
+  rsg_name     = var.rsg_name
+  rsg_location = var.rsg_location
 }
-#Keyvault  Creation
+#Get provider config
 data "azurerm_client_config" "current" {}
-resource "azurerm_key_vault" "kv1" {
-  depends_on                  = [azurerm_resource_group.rg2]
-  name                        = random_id.kvname.hex
-  location                    = "australiaeast"
-  resource_group_name         = "ateam-resource-group"
+
+module "zurerm-key-vault" {
+  source     = "../modules/azure-key-vault"
+  depends_on = [module.azure-resource-group]
+
+  name                        = "${local.prefix}dc01-vm"
+  location                    = module.azure-resource-group.azure_resource_group_location
+  resource_group_name         = module.azure-resource-group.azurerm_resource_group_name
   enabled_for_disk_encryption = true
   tenant_id                   = data.azurerm_client_config.current.tenant_id
   soft_delete_retention_days  = 7
   purge_protection_enabled    = false
-  sku_name                    = "standard"
-  access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = data.azurerm_client_config.current.object_id
-    key_permissions = [
-      "get",
-    ]
-    secret_permissions = [
-      "get", "backup", "delete", "list", "purge", "recover", "restore", "set",
-    ]
-    storage_permissions = [
-      "get",
-    ]
-  }
+  sku_name                    = var.sku_kb
+  object_id                   = data.azurerm_client_config.current.object_id
+  key_permissions = [
+    "get",
+  ]
+  secret_permissions = [
+    "get", "backup", "delete", "list", "purge", "recover", "restore", "set",
+  ]
+  storage_permissions = [
+    "get",
+  ]
 }
-
-
-#Create KeyVault VM password
-resource "random_password" "vmpassword" {
+module "random-password" {
+  source  = "../modules/random-password"
   length  = 20
   special = true
 }
-#Create Key Vault Secret
-resource "azurerm_key_vault_secret" "vmpassword" {
-  name         = "vmpassword"
-  value        = random_password.vmpassword.result
-  key_vault_id = azurerm_key_vault.kv1.id
-  depends_on   = [azurerm_key_vault.kv1]
+
+module "azure-key-vault-secret" {
+  source     = "../modules/azure-key-vault-secret"
+  depends_on = [module.zurerm-key-vault]
+
+  name         = "${local.prefix}vmpassword"
+  value        = module.random-password.zurerm-random-password-result
+  key_vault_id = module.zurerm-key-vault.zurerm-key-vault-id
 }
 
-
-
-
-#create the virtual networks
-resource "azurerm_virtual_network" "vnet1" {
-  resource_group_name = azurerm_resource_group.rg2.name
-  location            = "australiaeast"
-  name                = "dev"
-  address_space       = ["10.0.0.0/16"]
+module "azure-virtual-network" {
+  source              = "../modules/azure-virtual-network"
+  resource_group_name = module.azure-resource-group.azurerm_resource_group_name
+  location            = module.azure-resource-group.azure_resource_group_location
+  name                = "vnet-${local.env}"
+  address_space       = var.vnet_address_space
 }
 
-#create a subnet within the virtual  networks
-resource "azurerm_subnet" "subnet1" {
-  resource_group_name  = azurerm_resource_group.rg2.name
-  virtual_network_name = azurerm_virtual_network.vnet1.name
-  name                 = "devsubnet"
+module "azurerm-subnet" {
+  source               = "../modules/azurerm-subnet"
+  resource_group_name  = module.azure-resource-group.azurerm_resource_group_name
+  virtual_network_name = module.azure-virtual-network.zurerm-virtual-network-name
+  name                 = "snet-${local.env}"
   address_prefixes     = ["10.0.0.0/24"]
 }
 
-##create the network interface for the VM
-resource "azurerm_public_ip" "pub_ip" {
-  name                = "vmpubip"
-  location            = "australiaeast"
-  resource_group_name = azurerm_resource_group.rg2.name
+module "azure-public-ip" {
+  source              = "../modules/azure-public-ip"
+  name                = "pip-${var.rsg_name}-${local.prefix}-001"
+  location            = module.azure-resource-group.azure_resource_group_location
+  resource_group_name = module.azure-resource-group.azurerm_resource_group_name
   allocation_method   = "Dynamic"
 }
 
-resource "azurerm_network_interface" "vmnic" {
-  location            = "australiaeast"
-  resource_group_name = azurerm_resource_group.rg2.name
-  name                = "vmnic1"
-
-  ip_configuration {
-    name                          = "vmnic1-ipconf"
-    subnet_id                     = azurerm_subnet.subnet1.id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.pub_ip.id
-  }
+module "azure-network-interface" {
+  source                        = "../modules/azure-network-interface"
+  location                      = module.azure-resource-group.azure_resource_group_location
+  resource_group_name           = module.azure-resource-group.azurerm_resource_group_name
+  name                          = "${local.prefix}nic"
+  configuration_name            = "niccfg-${local.env}"
+  subnet_id                     = module.azurerm-subnet.zurerm-subnet-id
+  private_ip_address_allocation = "Dynamic"
+  public_ip_address_id          = module.azure-public-ip.azure-public-ip-id
 }
 
+#Create VM module
+module "azure-windows-vm" {
+  source     = "../modules/azure-windows-vm"
+  depends_on = [module.zurerm-key-vault]
 
-
-
-
-
-#Create VM
-resource "azurerm_windows_virtual_machine" "dc01-vm" {
-  name                = "dc01-vm"
-  depends_on          = [azurerm_key_vault.kv1]
-  resource_group_name = azurerm_resource_group.rg2.name
-  location            = "australiaeast"
-  size                = "Standard_A1_v2"
-  admin_username      = "hariom"
-  admin_password      = azurerm_key_vault_secret.vmpassword.value
-  network_interface_ids = [
-    azurerm_network_interface.vmnic.id,
-  ]
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "StandardSSD_LRS"
-  }
-
-  source_image_reference {
-    publisher = "MicrosoftWindowsServer"
-    offer     = "WindowsServer"
-    sku       = "2019-Datacenter"
-    version   = "latest"
-  }
+  name                  = "${local.prefix}vm-01"
+  resource_group_name   = module.azure-resource-group.azurerm_resource_group_name
+  location              = module.azure-resource-group.azure_resource_group_location
+  size                  = var.vm_size
+  admin_username        = var.admin_username
+  admin_password        = module.azure-key-vault-secret.zurerm-key-vault-secret-password
+  network_interface_ids = [module.azure-network-interface.azure-network-interface-id]
+  caching               = "ReadWrite"
+  storage_account_type  = var.disk_type
+  osconfig              = var.osconfig
 }
