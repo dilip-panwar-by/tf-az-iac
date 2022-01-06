@@ -1,6 +1,7 @@
 variable "rsg_name" {
   type        = string
   description = "Name of the resource group environment"
+  default     = null
 }
 
 variable "rsg_location" {
@@ -45,5 +46,8 @@ variable "vm_size" {
 variable "osconfig" {
   type        = map(string)
   description = "values of vm os"
+  default = {
+    "publisher" = null
+  }
 }
 
